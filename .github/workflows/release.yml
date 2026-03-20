@@ -55,11 +55,52 @@ jobs:
         if: matrix.os != 'windows-latest'
         run: mv target/mvn-arch${{ matrix.native-suffix }} target/${{ matrix.artifact }}
 
+      - name: Build MSI installer (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          dotnet tool install --global wix
+          cp target/mvn-arch.exe wix/
+          wix build wix/mvn-arch.wxs -d Version="${GITHUB_REF_NAME#v}" -o target/mvn-arch.msi
+        shell: bash
+
+      - name: Build deb package (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          mkdir -p deb-pkg/usr/local/bin
+          mkdir -p deb-pkg/DEBIAN
+          cp target/mvn-arch-linux deb-pkg/usr/local/bin/mvn-arch
+          chmod 755 deb-pkg/usr/local/bin/mvn-arch
+          cat > deb-pkg/DEBIAN/control << EOF
+          Package: mvn-arch
+          Version: ${VERSION}
+          Section: devel
+          Priority: optional
+          Architecture: amd64
+          Maintainer: sosuisen
+          Description: Wrapper CLI for mvn archetype:generate
+          EOF
+          dpkg-deb --build deb-pkg target/mvn-arch.deb
+
       - name: Upload artifact
         uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.artifact }}
           path: target/${{ matrix.artifact }}
+
+      - name: Upload MSI
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v5
+        with:
+          name: mvn-arch.msi
+          path: target/mvn-arch.msi
+
+      - name: Upload deb
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v5
+        with:
+          name: mvn-arch.deb
+          path: target/mvn-arch.deb
 
   release:
     needs: build
@@ -77,9 +118,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            artifacts/mvn-arch.exe/mvn-arch.exe
-            artifacts/mvn-arch-macos/mvn-arch-macos
-            artifacts/mvn-arch-linux/mvn-arch-linux
+            artifacts/mvn-arch.msi/mvn-arch.msi
+            artifacts/mvn-arch.deb/mvn-arch.deb
           generate_release_notes: true
 
   update-homebrew:

@@ -1,0 +1,30 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="mvn-arch"
+           Manufacturer="sosuisen"
+           Version="$(var.Version)"
+           UpgradeCode="e7a1b2c3-d4e5-6f78-9a0b-1c2d3e4f5a6b">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of mvn-arch is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="mvn-arch">
+        <Component Id="MainExecutable" Guid="a1b2c3d4-e5f6-7890-abcd-ef1234567890">
+          <File Id="MvnArchExe" Source="mvn-arch.exe" KeyPath="yes" />
+
+          <Environment Id="PATH"
+                       Name="PATH"
+                       Value="[INSTALLFOLDER]"
+                       Permanent="no"
+                       Part="last"
+                       Action="set"
+                       System="no" />
+        </Component>
+      </Directory>
+    </StandardDirectory>
+
+    <Feature Id="MainFeature" Title="mvn-arch" Level="1">
+      <ComponentRef Id="MainExecutable" />
+    </Feature>
+  </Package>
+</Wix>
