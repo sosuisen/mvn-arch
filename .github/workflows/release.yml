@@ -1,0 +1,76 @@
+name: Release Native Executables
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            artifact: mvn-arch.exe
+            native-suffix: -runner.exe
+          - os: macos-latest
+            artifact: mvn-arch-macos
+            native-suffix: -runner
+          - os: ubuntu-latest
+            artifact: mvn-arch-linux
+            native-suffix: -runner
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup GraalVM (Mandrel)
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '25'
+          distribution: 'mandrel'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Visual Studio Dev Environment
+        if: matrix.os == 'windows-latest'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Build native executable
+        run: ./mvnw clean package -Dnative -DskipTests
+
+      - name: Rename executable (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: cmd
+        run: ren target\mvn-arch${{ matrix.native-suffix }} ${{ matrix.artifact }}
+
+      - name: Rename executable (Unix)
+        if: matrix.os != 'windows-latest'
+        run: mv target/mvn-arch${{ matrix.native-suffix }} target/${{ matrix.artifact }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: target/${{ matrix.artifact }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/mvn-arch.exe/mvn-arch.exe
+            artifacts/mvn-arch-macos/mvn-arch-macos
+            artifacts/mvn-arch-linux/mvn-arch-linux
+          generate_release_notes: true

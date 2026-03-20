@@ -1,74 +1,47 @@
 # mvn-arch
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+## Dev mode
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
-
-## Running the application in dev mode
-
-You can run your application in dev mode that enables live coding using:
-
-```shell script
-./mvnw quarkus:dev
+```bash
+./mvnw clean package -DskipTests && java -Dquarkus.profile=dev -jar target/quarkus-app/quarkus-run.jar create
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+## Windows native executable
 
-## Packaging and running the application
+Mandrel (JDK 25+) and Visual Studio Build Tools (C/C++ workload) are required.
 
-The application can be packaged using:
+Switch to Mandrel with SDKMAN!:
 
-```shell script
-./mvnw package
+[bash]
+```bash
+sdk install java 25.0.2.r25-mandrel
+sdk default java 25.0.2.r25-mandrel
 ```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
+Use `sdk default` to enable mandrel in Command Prompt.
 
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
+Set the `GRAALVM_HOME` user environment variable on Windows:
 
-If you want to build an _über-jar_, execute the following command:
-
-```shell script
-./mvnw package -Dquarkus.package.jar.type=uber-jar
+```
+GRAALVM_HOME = %USERPROFILE%\.sdkman\candidates\java\current
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+Run in **Developer Command Prompt for VS**:
 
-## Creating a native executable
-
-You can create a native executable using:
-
-```shell script
-./mvnw package -Dnative
+[cmd]
+```cmd
+mvnw clean package -Dnative -DskipTests
 ```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
+The executable is generated at:
 
-```shell script
-./mvnw package -Dnative -Dquarkus.native.container-build=true
+```
+target\mvn-arch-runner.exe
 ```
 
-You can then execute your native executable with: `./target/mvn-arch-1.0.0-SNAPSHOT-runner`
+Rename it:
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
-
-## Related Guides
-
-- Picocli ([guide](https://quarkus.io/guides/picocli)): Develop command line applications with Picocli
-
-## Provided Code
-
-### Picocli Example
-
-Hello and goodbye are civilization fundamentals. Let's not forget it with this example picocli application by changing the <code>command</code> and <code>parameters</code>.
-
-[Related guide section...](https://quarkus.io/guides/picocli#command-line-application-with-multiple-commands)
-
-Also for picocli applications the dev mode is supported. When running dev mode, the picocli application is executed and on press of the Enter key, is restarted.
-
-As picocli applications will often require arguments to be passed on the commandline, this is also possible in dev mode via:
-
-```shell script
-./mvnw quarkus:dev -Dquarkus.args='Quarky'
+[cmd]
+```cmd
+ren target\mvn-arch-runner.exe mvn-arch.exe
 ```

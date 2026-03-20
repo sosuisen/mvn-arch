@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Quarkus REST API",
+    "groupId": "io.quarkus.platform",
+    "artifactId": "quarkus-bom-quarkus-platform-descriptor",
+    "version": "3.32.4"
+  },
+  {
+    "name": "Maven Quickstart",
+    "groupId": "org.apache.maven.archetypes",
+    "artifactId": "maven-archetype-quickstart",
+    "version": "1.5"
+  },
+  {
+    "name": "Maven Webapp",
+    "groupId": "org.apache.maven.archetypes",
+    "artifactId": "maven-archetype-webapp",
+    "version": "1.5"
+  }
+]
