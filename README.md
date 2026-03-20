@@ -11,6 +11,12 @@ Commands:
   list    List available archetypes
 ```
 
+## Archetype catalog
+
+The list of available archetypes is fetched from the JSON file specified by `mvn-arch.catalog.url` in `application.properties`.
+
+Default: https://raw.githubusercontent.com/sosuisen/mvn-arch-catalog/refs/heads/main/archetypes.json
+
 ## Dev mode
 
 ```bash
@@ -56,3 +62,7 @@ Rename it:
 ```cmd
 ren target\mvn-arch-runner.exe mvn-arch.exe
 ```
+
+## Note
+
+This project was also started out of interest in building CLI tools with Quarkus.
