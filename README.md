@@ -1,5 +1,16 @@
 # mvn-arch
 
+A wrapper CLI for `mvn archetype:generate`
+
+```
+Usage: mvn-arch [-hV] [COMMAND]
+  -h, --help      Show this help message and exit.
+  -V, --version   Print version information and exit.
+Commands:
+  create  Create a new project from an archetype
+  list    List available archetypes
+```
+
 ## Dev mode
 
 ```bash
