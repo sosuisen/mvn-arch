@@ -59,8 +59,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           dotnet tool install --global wix
-          cp target/mvn-arch.exe wix/
-          wix build wix/mvn-arch.wxs -d Version="${GITHUB_REF_NAME#v}" -o target/mvn-arch.msi
+          wix build wix/mvn-arch.wxs -d Version="${GITHUB_REF_NAME#v}" -b target/ -o target/mvn-arch.msi
         shell: bash
 
       - name: Build deb package (Linux)
