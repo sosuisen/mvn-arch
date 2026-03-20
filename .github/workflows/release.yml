@@ -119,7 +119,23 @@ jobs:
           files: |
             artifacts/mvn-arch.msi/mvn-arch.msi
             artifacts/mvn-arch.deb/mvn-arch.deb
+            artifacts/mvn-arch-macos/mvn-arch-macos
           generate_release_notes: true
+          append_body: true
+          body: |
+            ## Install
+
+            **Windows:** Download and run `mvn-arch.msi`
+
+            **macOS (Homebrew):**
+            ```
+            brew tap sosuisen/tap && brew install mvn-arch
+            ```
+
+            **Ubuntu/Debian:**
+            ```
+            sudo dpkg -i mvn-arch.deb
+            ```
 
   update-homebrew:
     needs: release
