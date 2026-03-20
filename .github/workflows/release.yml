@@ -36,6 +36,10 @@ jobs:
         if: matrix.os == 'windows-latest'
         uses: ilammy/msvc-dev-cmd@v1
 
+      - name: Make mvnw executable
+        if: matrix.os != 'windows-latest'
+        run: chmod +x ./mvnw
+
       - name: Build native executable
         run: ./mvnw clean package -Dnative -DskipTests
 
