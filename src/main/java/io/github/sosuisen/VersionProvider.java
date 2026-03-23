@@ -1,7 +1,5 @@
 package io.github.sosuisen;
 
-import module java.base;
-
 import org.eclipse.microprofile.config.ConfigProvider;
 
 import picocli.CommandLine.IVersionProvider;
@@ -18,6 +16,6 @@ public class VersionProvider implements IVersionProvider {
         var version = ConfigProvider.getConfig()
                 .getOptionalValue("quarkus.application.version", String.class)
                 .orElse("unknown");
-        return new String[]{"mvn-arch " + version};
+        return new String[] { "mvn-arch " + version };
     }
 }

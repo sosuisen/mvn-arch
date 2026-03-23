@@ -102,20 +102,45 @@ public class InteractiveMenu {
         }
     }
 
-    // Reads a line from the terminal character by character.
-    // Cannot use Scanner(System.in) because on macOS the terminal driver may
-    // not fully restore input processing (e.g. CR→LF translation) after JLine's
-    // raw mode, causing Enter to echo ^M instead of submitting input.
-    // Cannot use JLine's LineReader because it does not handle backspace
-    // correctly after the terminal has been used in raw mode for menu selection.
+    // On macOS, the terminal driver may not fully restore input processing
+    // (e.g. CR→LF translation) after JLine's raw mode session, causing Enter
+    // to echo ^M instead of submitting input when using Scanner(System.in).
+    // On Windows, JLine's terminal.reader() does not correctly capture
+    // Backspace, producing garbled input.
+    // Therefore, use terminal.reader() with raw mode on macOS/Linux,
+    // and Scanner(System.in) on Windows.
     private Optional<String> promptArtifactId(Terminal terminal) {
+        return IS_WINDOWS
+                ? promptArtifactIdScanner(terminal)
+                : promptArtifactIdRaw(terminal);
+    }
+
+    @SuppressWarnings("resource") // closing Scanner would close System.in
+    private Optional<String> promptArtifactIdScanner(Terminal terminal) {
+        var scanner = new Scanner(System.in);
+
+        System.out.println("Input your artifactId (type 'q' to cancel):");
+
+        while (true) {
+            System.out.print("> ");
+            System.out.flush();
+            var input = scanner.nextLine().trim();
+
+            if ("q".equalsIgnoreCase(input)) {
+                return Optional.empty();
+            }
+            if (ARTIFACT_ID_PATTERN.matcher(input).matches()) {
+                return Optional.of(input);
+            }
+            System.out.println("Invalid artifactId: '" + input + "'");
+            System.out.println("  Only lowercase letters, digits, and hyphens are allowed. (e.g. my-app)");
+        }
+    }
+
+    private Optional<String> promptArtifactIdRaw(Terminal terminal) {
         var writer = terminal.writer();
         var reader = terminal.reader();
 
-        // Enter raw mode so we can read character by character and handle
-        // backspace ourselves.  This also avoids the macOS issue where the
-        // terminal driver does not fully restore CR→LF translation after
-        // JLine's earlier raw-mode session.
         var savedAttrs = terminal.enterRawMode();
         try {
             writer.println("Input your artifactId (type 'q' to cancel):");
@@ -161,7 +186,6 @@ public class InteractiveMenu {
                 if (ch == 127 || ch == 8) {
                     if (!sb.isEmpty()) {
                         sb.deleteCharAt(sb.length() - 1);
-                        // Erase character on screen: move back, overwrite with space, move back
                         writer.print("\b \b");
                         writer.flush();
                     }
