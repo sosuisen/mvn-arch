@@ -13,10 +13,10 @@ public class MavenExecutorTest {
     private final MavenExecutor executor = new MavenExecutor();
 
     private final Archetype archetype = new Archetype(
-            "Quarkus REST API",
-            "io.quarkus.platform",
-            "quarkus-bom-quarkus-platform-descriptor",
-            "3.32.4");
+            "Maven Quickstart",
+            "org.apache.maven.archetypes",
+            "maven-archetype-quickstart",
+            "1.5");
 
     @Test
     void buildMvnCommandWithAllProjectCoordinates() {
@@ -24,9 +24,9 @@ public class MavenExecutorTest {
                 archetype, "com.myapp", "my-service", "2.0.0");
 
         assertTrue(command.startsWith("mvn archetype:generate -B"));
-        assertTrue(command.contains("-DarchetypeGroupId=io.quarkus.platform"));
-        assertTrue(command.contains("-DarchetypeArtifactId=quarkus-bom-quarkus-platform-descriptor"));
-        assertTrue(command.contains("-DarchetypeVersion=3.32.4"));
+        assertTrue(command.contains("-DarchetypeGroupId=org.apache.maven.archetypes"));
+        assertTrue(command.contains("-DarchetypeArtifactId=maven-archetype-quickstart"));
+        assertTrue(command.contains("-DarchetypeVersion=1.5"));
         assertTrue(command.contains("-DgroupId=com.myapp"));
         assertTrue(command.contains("-DartifactId=my-service"));
         assertTrue(command.contains("-Dversion=2.0.0"));

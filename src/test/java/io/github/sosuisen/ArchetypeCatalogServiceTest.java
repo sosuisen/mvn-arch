@@ -28,11 +28,11 @@ public class ArchetypeCatalogServiceTest {
 
         var archetypes = result.get();
         assertFalse(archetypes.isEmpty(), "Catalog should not be empty");
-        assertEquals(3, archetypes.size(), "Sample catalog should have 3 entries");
+        assertEquals(2, archetypes.size(), "Sample catalog should have 2 entries");
 
         var first = archetypes.getFirst();
-        assertEquals("Quarkus REST API", first.name());
-        assertEquals("io.quarkus.platform", first.groupId());
+        assertEquals("Maven Quickstart", first.name());
+        assertEquals("org.apache.maven.archetypes", first.groupId());
     }
 
     @Test

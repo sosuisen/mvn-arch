@@ -31,6 +31,7 @@ public class MavenExecutor {
         Objects.requireNonNull(projGroupId, "projGroupId must not be null");
         Objects.requireNonNull(projArtifactId, "projArtifactId must not be null");
 
+        var cwd = Path.of("").toAbsolutePath();
         var mvnCommand = buildMvnCommand(archetype, projGroupId, projArtifactId, projVersion);
 
         System.out.println("Generating project with Maven...");
@@ -44,11 +45,20 @@ public class MavenExecutor {
         System.out.println("  " + mvnCommand);
         System.out.println();
 
+        Path tempDir = null;
         try {
+            // Running `mvn archetype:generate` directly in the current directory
+            // fails if a pom.xml already exists there, because the archetype plugin
+            // tries to add the new project as a module of the existing project.
+            // To avoid this, run Maven in a temporary directory and move the
+            // generated project back to the user's working directory afterwards.
+            tempDir = Files.createTempDirectory("mvn-arch-");
+
             var processBuilder = IS_WINDOWS
                     ? new ProcessBuilder("cmd.exe", "/c", mvnCommand)
                     : new ProcessBuilder("sh", "-c", mvnCommand);
             processBuilder.redirectErrorStream(true);
+            processBuilder.directory(tempDir.toFile());
 
             var process = processBuilder.start();
             printProcessOutput(process);
@@ -59,7 +69,18 @@ public class MavenExecutor {
                 return false;
             }
 
-            return verifyProjectCreated(projArtifactId);
+            var generatedDir = tempDir.resolve(projArtifactId);
+            if (!Files.isDirectory(generatedDir)) {
+                System.err.println("Error: Project directory '" + projArtifactId
+                        + "' was not created.");
+                return false;
+            }
+
+            var targetDir = cwd.resolve(projArtifactId);
+            Files.move(generatedDir, targetDir);
+            System.out.println();
+            System.out.println("Project created successfully: " + targetDir);
+            return true;
         } catch (IOException e) {
             handleIOException(e);
             return false;
@@ -67,6 +88,8 @@ public class MavenExecutor {
             Thread.currentThread().interrupt();
             System.err.println("Error: Maven command was interrupted.");
             return false;
+        } finally {
+            deleteTempDir(tempDir);
         }
     }
 
@@ -94,15 +117,19 @@ public class MavenExecutor {
         }
     }
 
-    private boolean verifyProjectCreated(String artifactId) {
-        var projectDir = Path.of(artifactId);
-        if (Files.isDirectory(projectDir)) {
-            System.out.println();
-            System.out.println("Project created successfully: " + projectDir.toAbsolutePath());
-            return true;
-        } else {
-            System.err.println("Error: Project directory '" + artifactId + "' was not created.");
-            return false;
+    private void deleteTempDir(Path tempDir) {
+        if (tempDir == null) {
+            return;
+        }
+        try (var walk = Files.walk(tempDir)) {
+            walk.sorted(Comparator.reverseOrder())
+                    .forEach(p -> {
+                        try {
+                            Files.deleteIfExists(p);
+                        } catch (IOException ignored) {
+                        }
+                    });
+        } catch (IOException ignored) {
         }
     }
 
