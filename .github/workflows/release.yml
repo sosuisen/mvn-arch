@@ -59,7 +59,8 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           dotnet tool install --global wix
-          wix build wix/mvn-arch.wxs -d Version="${GITHUB_REF_NAME#v}" -b target/ -o target/mvn-arch.msi
+          wix extension add WixToolset.UI.wixext
+          wix build wix/mvn-arch.wxs -d Version="${GITHUB_REF_NAME#v}" -b target/ -o target/mvn-arch.msi -ext WixToolset.UI.wixext
         shell: bash
 
       - name: Build deb package (Linux)
