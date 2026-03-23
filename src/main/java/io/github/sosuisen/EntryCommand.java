@@ -9,7 +9,7 @@ import picocli.CommandLine.Command;
  */
 @TopCommand
 @Command(name = "mvn-arch", mixinStandardHelpOptions = true,
-        version = "mvn-arch 1.0.0",
+        versionProvider = VersionProvider.class,
         subcommands = {CreateCommand.class, ListCommand.class},
         description = "A wrapper CLI for `mvn archetype:generate`")
 public class EntryCommand {
