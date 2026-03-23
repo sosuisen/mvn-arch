@@ -28,6 +28,7 @@
       <ComponentRef Id="MainExecutable" />
     </Feature>
 
+    <WixVariable Id="WixUILicenseRtf" Value="wix\License.rtf" />
     <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
   </Package>
 </Wix>
