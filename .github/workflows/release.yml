@@ -166,7 +166,7 @@ jobs:
 
       - name: Write formula
         run: |
-          cat > homebrew-tap/Formula/mvn-arch.rb << 'FORMULA'
+          cat > homebrew-tap/Formula/mvn-arch.rb <<'FORMULA'
           class MvnArch < Formula
             desc "Wrapper CLI for mvn archetype:generate"
             homepage "https://github.com/sosuisen/mvn-arch"
@@ -195,6 +195,7 @@ jobs:
             end
           end
           FORMULA
+          sed -i 's/^          //' homebrew-tap/Formula/mvn-arch.rb
 
       - name: Commit and push formula
         run: |

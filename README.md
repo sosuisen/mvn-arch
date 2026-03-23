@@ -11,6 +11,26 @@ Commands:
   list    List available archetypes
 ```
 
+### Interactive mode
+
+```bash
+mvn-arch create
+```
+
+Launches an interactive menu to select an archetype and enter an artifactId.
+
+### One-liner mode
+
+```bash
+mvn-arch create archGroupId:archArtifactId:archVersion projGroupId:projArtifactId:projVersion
+```
+
+Example:
+
+```bash
+mvn-arch create org.apache.maven.archetypes:maven-archetype-webapp:1.5 com.myapp:my-webapp:1.0.0
+```
+
 ## Archetype catalog
 
 The list of available archetypes is fetched from the JSON file specified by `mvn-arch.catalog.url` in `application.properties`.

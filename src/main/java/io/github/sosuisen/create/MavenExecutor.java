@@ -16,22 +16,32 @@ public class MavenExecutor {
             .toLowerCase().contains("win");
 
     /**
-     * Generates a Maven project from the given archetype and artifactId.
+     * Generates a Maven project from the given archetype and project coordinates.
      *
-     * @param archetype the archetype to use
-     * @param artifactId the project's artifactId
+     * @param archetype      the archetype to use
+     * @param projGroupId    the project's groupId
+     * @param projArtifactId the project's artifactId
+     * @param projVersion    the project's version, or null to use the Maven default
      * @return true on success, false on failure
-     * @throws NullPointerException if archetype or artifactId is null
+     * @throws NullPointerException if archetype, projGroupId, or projArtifactId is null
      */
-    public boolean execute(Archetype archetype, String artifactId) {
+    public boolean execute(Archetype archetype,
+                           String projGroupId, String projArtifactId, String projVersion) {
         Objects.requireNonNull(archetype, "archetype must not be null");
-        Objects.requireNonNull(artifactId, "artifactId must not be null");
+        Objects.requireNonNull(projGroupId, "projGroupId must not be null");
+        Objects.requireNonNull(projArtifactId, "projArtifactId must not be null");
 
-        var mvnCommand = buildMvnCommand(archetype, artifactId);
+        var mvnCommand = buildMvnCommand(archetype, projGroupId, projArtifactId, projVersion);
 
         System.out.println("Generating project with Maven...");
         System.out.println("  Archetype: " + archetype.name());
-        System.out.println("  artifactId: " + artifactId);
+        System.out.println("  groupId: " + projGroupId);
+        System.out.println("  artifactId: " + projArtifactId);
+        if (projVersion != null) {
+            System.out.println("  version: " + projVersion);
+        }
+        System.out.println();
+        System.out.println("  " + mvnCommand);
         System.out.println();
 
         try {
@@ -49,7 +59,7 @@ public class MavenExecutor {
                 return false;
             }
 
-            return verifyProjectCreated(artifactId);
+            return verifyProjectCreated(projArtifactId);
         } catch (IOException e) {
             handleIOException(e);
             return false;
@@ -60,13 +70,19 @@ public class MavenExecutor {
         }
     }
 
-    private String buildMvnCommand(Archetype archetype, String artifactId) {
-        return "mvn archetype:generate -B"
+    String buildMvnCommand(Archetype archetype,
+                                    String projGroupId, String projArtifactId,
+                                    String projVersion) {
+        var command = "mvn archetype:generate -B"
                 + " -DarchetypeGroupId=" + archetype.groupId()
                 + " -DarchetypeArtifactId=" + archetype.artifactId()
                 + " -DarchetypeVersion=" + archetype.version()
-                + " -DgroupId=com.example"
-                + " -DartifactId=" + artifactId;
+                + " -DgroupId=" + projGroupId
+                + " -DartifactId=" + projArtifactId;
+        if (projVersion != null) {
+            command += " -Dversion=" + projVersion;
+        }
+        return command;
     }
 
     private void printProcessOutput(Process process) throws IOException {
