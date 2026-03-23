@@ -102,28 +102,81 @@ public class InteractiveMenu {
         }
     }
 
-    // Uses Scanner instead of JLine LineReader because LineReader does not handle
-    // backspace correctly after the terminal has been used in raw mode for menu
-    // selection.
-    @SuppressWarnings("resource") // closing Scanner would close System.in
+    // Reads a line from the terminal character by character.
+    // Cannot use Scanner(System.in) because on macOS the terminal driver may
+    // not fully restore input processing (e.g. CR→LF translation) after JLine's
+    // raw mode, causing Enter to echo ^M instead of submitting input.
+    // Cannot use JLine's LineReader because it does not handle backspace
+    // correctly after the terminal has been used in raw mode for menu selection.
     private Optional<String> promptArtifactId(Terminal terminal) {
-        var scanner = new Scanner(System.in);
+        var writer = terminal.writer();
+        var reader = terminal.reader();
 
-        System.out.println("Input your artifactId (type 'q' to cancel):");
+        // Enter raw mode so we can read character by character and handle
+        // backspace ourselves.  This also avoids the macOS issue where the
+        // terminal driver does not fully restore CR→LF translation after
+        // JLine's earlier raw-mode session.
+        var savedAttrs = terminal.enterRawMode();
+        try {
+            writer.println("Input your artifactId (type 'q' to cancel):");
 
-        while (true) {
-            System.out.print("> ");
-            System.out.flush();
-            var input = scanner.nextLine().trim();
+            while (true) {
+                writer.print("> ");
+                writer.flush();
+                var line = readLine(reader, writer);
 
-            if ("q".equalsIgnoreCase(input)) {
-                return Optional.empty();
+                if (line == null) {
+                    return Optional.empty();
+                }
+                var input = line.trim();
+
+                if ("q".equalsIgnoreCase(input)) {
+                    return Optional.empty();
+                }
+                if (ARTIFACT_ID_PATTERN.matcher(input).matches()) {
+                    return Optional.of(input);
+                }
+                writer.println("Invalid artifactId: '" + input + "'");
+                writer.println("  Only lowercase letters, digits, and hyphens are allowed. (e.g. my-app)");
             }
-            if (ARTIFACT_ID_PATTERN.matcher(input).matches()) {
-                return Optional.of(input);
+        } finally {
+            terminal.setAttributes(savedAttrs);
+        }
+    }
+
+    private String readLine(java.io.Reader reader, PrintWriter writer) {
+        var sb = new StringBuilder();
+        try {
+            while (true) {
+                int ch = reader.read();
+                if (ch == -1) {
+                    return null;
+                }
+                if (ch == '\r' || ch == '\n') {
+                    writer.println();
+                    writer.flush();
+                    return sb.toString();
+                }
+                // Backspace / DEL
+                if (ch == 127 || ch == 8) {
+                    if (!sb.isEmpty()) {
+                        sb.deleteCharAt(sb.length() - 1);
+                        // Erase character on screen: move back, overwrite with space, move back
+                        writer.print("\b \b");
+                        writer.flush();
+                    }
+                    continue;
+                }
+                // Ignore non-printable control characters
+                if (ch < 32) {
+                    continue;
+                }
+                sb.append((char) ch);
+                writer.print((char) ch);
+                writer.flush();
             }
-            System.out.println("Invalid artifactId: '" + input + "'");
-            System.out.println("  Only lowercase letters, digits, and hyphens are allowed. (e.g. my-app)");
+        } catch (IOException e) {
+            return null;
         }
     }
 
