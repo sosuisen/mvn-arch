@@ -12,13 +12,16 @@ import org.jline.utils.InfoCmp.Capability;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+
 /**
  * Cursor-based interactive menu using JLine3.
  */
 @ApplicationScoped
 public class InteractiveMenu {
 
-    private static final String VERSION = "1.0.0";
+    @ConfigProperty(name = "quarkus.application.version", defaultValue = "unknown")
+    String version;
     private static final Pattern ARTIFACT_ID_PATTERN = Pattern.compile("^[a-z][a-z0-9]*(-[a-z0-9]+)*$");
 
     private static final String ANSI_CYAN = "\u001b[36m";
@@ -158,7 +161,7 @@ public class InteractiveMenu {
         clearScreen(terminal);
 
         writer.println("mvn-arch (wrapper of `mvn archetype:generate`)");
-        writer.println("ver." + VERSION);
+        writer.println("ver." + version);
         writer.println();
         writer.println("Choose a project type (Up/Down to move, Enter to select, q to quit):");
         writer.println();
