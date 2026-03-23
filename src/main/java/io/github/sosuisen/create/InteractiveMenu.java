@@ -68,10 +68,7 @@ public class InteractiveMenu {
             System.err.println(e.getMessage());
             return Optional.empty();
         } finally {
-            // JLine's system terminal may not restore System.out on macOS.
-            // Recreate it from the original file descriptor to ensure subsequent
-            // output is visible.
-            System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out), true));
+            restoreSystemOut();
         }
     }
 
@@ -185,6 +182,25 @@ public class InteractiveMenu {
         var writer = terminal.writer();
         writer.print("\u001b[2J\u001b[H");
         writer.flush();
+    }
+
+    private static final boolean IS_WINDOWS = System.getProperty("os.name", "")
+            .toLowerCase().contains("win");
+
+    /**
+     * Restores System.out after JLine's system terminal is closed.
+     * On macOS, closing JLine's system terminal can corrupt the underlying
+     * file descriptor, leaving System.out in a state where writes produce
+     * no visible output. Opening /dev/tty directly bypasses the broken fd.
+     */
+    private void restoreSystemOut() {
+        if (IS_WINDOWS) {
+            return;
+        }
+        try {
+            System.setOut(new PrintStream(new FileOutputStream("/dev/tty"), true));
+        } catch (FileNotFoundException ignored) {
+        }
     }
 
     /**
