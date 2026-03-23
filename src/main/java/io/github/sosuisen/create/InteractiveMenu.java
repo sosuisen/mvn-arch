@@ -67,6 +67,11 @@ public class InteractiveMenu {
             System.err.println("Error: Failed to create interactive terminal.");
             System.err.println(e.getMessage());
             return Optional.empty();
+        } finally {
+            // JLine's system terminal may not restore System.out on macOS.
+            // Recreate it from the original file descriptor to ensure subsequent
+            // output is visible.
+            System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out), true));
         }
     }
 
