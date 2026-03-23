@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.sosuisen</groupId>
   <artifactId>mvn-arch</artifactId>
-  <version>0.2.3</version>
+  <version>0.2.4</version>
   <packaging>quarkus</packaging>
   <properties>
     <compiler-plugin.version>3.15.0</compiler-plugin.version>
